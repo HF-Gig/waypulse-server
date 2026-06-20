@@ -1,15 +1,15 @@
 import { Router } from "express";
 import multer from "multer";
 //@ts-ignore
-import { createUpdate, getUpdates } from "../controller/update.js";
+import { createUpdate, getUpdates, voteUpdate, addComment, getComments } from "../controller/update.js";
+import { authenticate } from "./auth.js";
 
 const router = Router();
 
-// Multer memory storage configuration
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
@@ -19,10 +19,15 @@ const upload = multer({
   },
 });
 
-// POST /api/updates
-router.post("/", upload.single("image"), createUpdate);
+router.post("/", authenticate, upload.single("image"), createUpdate);
 
-// GET /api/updates
 router.get("/", getUpdates);
+
+router.post("/:id/vote", authenticate, voteUpdate);
+
+router.post("/:id/comment", authenticate, addComment);
+
+router.get("/:id/comments", getComments);
+
 
 export default router;

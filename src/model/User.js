@@ -18,6 +18,20 @@ const userSchema = new mongoose.Schema(
       default: "Email",
       required: true,
     },
+    show_name_in_update: {
+      type: String,
+      enum: ["yes", "no"],
+      default: "yes",
+    },
+    theme: {
+      type: String,
+      enum: ["light", "dark"],
+      default: "light",
+    },
+    name: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: { createdAt: "createdAt", updatedAt: false },

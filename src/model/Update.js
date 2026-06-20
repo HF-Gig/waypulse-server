@@ -32,6 +32,35 @@ const updateSchema = new mongoose.Schema(
       type: String,
       required: [true, "Picture path is required"],
     },
+    upvotes: {
+      type: Number,
+      default: 0,
+    },
+    downvotes: {
+      type: Number,
+      default: 0,
+    },
+    comments: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    shares: {
+      type: Number,
+      default: 0,
+    },
+    uploaderName: {
+      type: String,
+      default: "UE",
+    },
+    votes: {
+      type: [
+        {
+          vote: { type: String, enum: ["upvote", "downvote"] },
+          userID: { type: String },
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,
