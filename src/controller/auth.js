@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 //@ts-ignore
 import User from "../model/User.js";
 //@ts-ignore
+import Update from "../model/Update.js";
+//@ts-ignore
 import { sendSuccess, sendError } from "../helper/response.js";
 
 export const registerUser = async (req, res) => {
@@ -421,4 +423,85 @@ export const googleRegister = async (req, res) => {
     return sendError(res, "Google registration failed", 500, error);
   }
 };
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const page = req.query.page ? parseInt(req.query.page) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const { search } = req.query;
+
+    const query = {};
+    if (search && search.trim() !== "") {
+      const searchRegex = { $regex: search, $options: "i" };
+      query.$or = [
+        { name: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    if (page !== null) {
+      const skip = (page - 1) * limit;
+      const users = await User.find(query, "name email method createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+      const total = await User.countDocuments(query);
+      return sendSuccess(
+        res,
+        "Users retrieved successfully",
+        {
+          users,
+          hasMore: skip + users.length < total,
+          total,
+        },
+        200
+      );
+    } else {
+      const users = await User.find(query, "name email method createdAt").sort({ createdAt: -1 });
+      return sendSuccess(res, "Users retrieved successfully", users, 200);
+    }
+  } catch (error) {
+    console.error("Get all users error:", error);
+    return sendError(res, "Failed to retrieve users", 500, error);
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Update.deleteMany({ uploaderId: id });
+    await User.findByIdAndDelete(id);
+    return sendSuccess(res, "User and their updates deleted successfully", null, 200);
+  } catch (error) {
+    console.error("Delete user error:", error);
+    return sendError(res, "Failed to delete user", 500, error);
+  }
+};
+
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password } = req.body;
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email.toLowerCase();
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updatedUser) {
+      return sendError(res, "User not found", 404);
+    }
+
+    return sendSuccess(res, "User updated successfully", updatedUser, 200);
+  } catch (error) {
+    console.error("Update user error:", error);
+    return sendError(res, "Failed to update user", 500, error);
+  }
+};
+
 

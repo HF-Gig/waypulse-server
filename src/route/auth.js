@@ -1,7 +1,7 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
 //@ts-ignore
-import { registerUser, loginUser, googleLogin, checkGoogleSignup, googleRegister, getPreferences, updatePreferences } from "../controller/auth.js";
+import { registerUser, loginUser, googleLogin, checkGoogleSignup, googleRegister, getPreferences, updatePreferences, getAllUsers, deleteUser, updateUser } from "../controller/auth.js";
 import { sendError } from "../helper/response.js";
 
 const router = Router();
@@ -25,6 +25,15 @@ export const authenticate = (req, res, next) => {
     return sendError(res, "Invalid or expired token", 401);
   }
 };
+
+// GET /api/auth/users
+router.get("/users", getAllUsers);
+
+// DELETE /api/auth/users/:id
+router.delete("/users/:id", deleteUser);
+
+// PUT /api/auth/users/:id
+router.put("/users/:id", updateUser);
 
 // POST /api/auth/register
 router.post("/register", registerUser);

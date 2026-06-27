@@ -52,6 +52,11 @@ const updateSchema = new mongoose.Schema(
       type: String,
       default: "UE",
     },
+    uploaderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false,
+    },
     votes: {
       type: [
         {

@@ -52,6 +52,7 @@ export const createUpdate = async (req, res) => {
       comments: {},
       shares: 0,
       uploaderName,
+      uploaderId: req.userId,
     });
 
     await newUpdate.save();

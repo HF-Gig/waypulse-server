@@ -54,11 +54,32 @@ export const joinWaitlist = async (req, res) => {
 
 export const getWaitlist = async (req, res) => {
   try {
-    const entries = await Waitlist.find().sort({ joined_at: -1 });
+    const { search, page = 1, limit = 5 } = req.query;
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = {};
+    if (search && search.trim() !== "") {
+      query.email = { $regex: search, $options: "i" };
+    }
+
+    const total = await Waitlist.countDocuments(query);
+    const entries = await Waitlist.find(query)
+      .sort({ joined_at: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const hasMore = skip + entries.length < total;
+
     return sendSuccess(
       res,
       "Waitlist entries retrieved successfully",
-      entries,
+      {
+        entries,
+        total,
+        hasMore,
+      },
       200,
     );
   } catch (error) {
