@@ -21,7 +21,20 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://preview--waypulse-pakistan.lovable.app",
+      "https://waypulse-pakistan.lovable.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "ngrok-skip-browser-warning",
+    ],
+  }),
+);
 app.use(express.json());
 
 app.use("/images", express.static("images"));
